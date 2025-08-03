@@ -35,6 +35,8 @@ if [[ "$PWD" != "/home/jwno/base_deb" ]]; then
     error "Script must be run from /home/jwno/base_deb directory"
 fi
 
+
+
 log "Starting Debian Trixie setup..."
 
 # Update system
@@ -49,9 +51,12 @@ log "Installing essential packages..."
 sudo apt install -y \
     blueman \
     bluez \
+    brightnessctl \
     btop \
     build-essential \
+    cliphist \
     curl \
+    dunst \
     fastfetch \
     fbset \
     firefox \
@@ -74,6 +79,7 @@ sudo apt install -y \
     nftables \
     pkg-config \
     psmisc \
+    pulseaudio \
     python3-pip \
     python3-venv \
     qtile \
@@ -83,19 +89,16 @@ sudo apt install -y \
     unity-greeter \
     vim \
     wget \
+    xclip \
     zram-tools || error "Failed to install essential packages"
+
+# Install Python packages
+log "Installing Python packages..."
+pip3 install --user pulsectl-asyncio || error "Failed to install pulsectl-asyncio"
 
 # Add flathub repository
 log "Adding Flathub repository..."
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || error "Failed to add Flathub repository"
-
-# Install Google Chrome
-log "Installing Google Chrome..."
-cd /tmp
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add - || error "Failed to add Google Chrome signing key"
-echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list || error "Failed to add Google Chrome repository"
-sudo apt update || error "Failed to update package lists after adding Chrome repo"
-sudo apt install -y google-chrome-stable || error "Failed to install Google Chrome"
 
 # Install Flatpak applications
 log "Installing Flatpak applications..."
@@ -104,7 +107,8 @@ flatpak install -y flathub com.protonvpn.www || error "Failed to install ProtonV
 
 # Build and install ST terminal
 log "Building ST terminal..."
-cd /tmp
+mkdir -p /home/jwno/src
+cd /home/jwno/src
 git clone https://git.suckless.org/st || error "Failed to clone ST repository"
 cd st
 
@@ -121,6 +125,14 @@ patch -p1 < st-scrollback-0.9.2.diff || error "Failed to apply scrollback patch"
 patch -p1 < st-scrollback-mouse-0.9.2.diff || error "Failed to apply scrollback mouse patch"
 
 make clean install || error "Failed to build and install ST"
+
+# Install ble.sh
+log "Installing ble.sh..."
+cd /home/jwno/src
+git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git || error "Failed to clone ble.sh repository"
+cd ble.sh
+make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
+cd /home/jwno/base_deb
 
 # Copy dotfiles and configurations
 log "Setting up dotfiles and configurations..."
@@ -144,28 +156,28 @@ log "Setting up application configurations..."
 cp -r config/fastfetch /home/jwno/.config/ || error "Failed to copy fastfetch config"
 cp -r config/gtk-3.0 /home/jwno/.config/ || error "Failed to copy gtk-3.0 config"
 cp -r config/gtk-4.0 /home/jwno/.config/ || error "Failed to copy gtk-4.0 config"
-cp -r config/qtile /home/jwno/.config/ || error "Failed to copy qtile config"
+cp -r Documents/qtile /home/jwno/.config/ || error "Failed to copy qtile config"
 
-# Create directories for themes and icons
-mkdir -p /home/jwno/.themes
-mkdir -p /home/jwno/.icons
+# Install themes and icons system-wide
+log "Installing themes system-wide..."
+cd themes
+tar -xf Tokyonight-Dark.tar.xz || error "Failed to extract Tokyonight-Dark theme"
+sudo cp -r Tokyonight-Dark /usr/share/themes/ || error "Failed to install Tokyonight-Dark theme"
 
-# Copy themes and icons (if directories exist)
-if [ -d "themes" ]; then
-    log "Setting up themes..."
-    cp -r themes/* /home/jwno/.themes/ || error "Failed to copy themes"
-fi
+log "Installing icons system-wide..."
+cd ../icons
+tar -xf BreezeX-RosePine-Linux.tar.xz || error "Failed to extract BreezeX-RosePine-Linux icons"
+sudo cp -r BreezeX-RosePine-Linux /usr/share/icons/ || error "Failed to install BreezeX-RosePine-Linux icons"
 
-if [ -d "icons" ]; then
-    log "Setting up icons..."
-    cp -r icons/* /home/jwno/.icons/ || error "Failed to copy icons"
-fi
+cd /home/jwno/base_deb
 
-# Create Firefox profile directories and copy Chrome configs
-mkdir -p /home/jwno/.mozilla/firefox/default.default/chrome
-log "Setting up Firefox configuration..."
-cp Documents/chrome/userChrome.css /home/jwno/.mozilla/firefox/default.default/chrome/ || error "Failed to copy userChrome.css"
-cp Documents/chrome/userContent.css /home/jwno/.mozilla/firefox/default.default/chrome/ || error "Failed to copy userContent.css"
+# Copy Documents directory
+log "Setting up Documents directory..."
+cp -r Documents /home/jwno/ || error "Failed to copy Documents directory"
+
+# Copy Pictures directory
+log "Setting up Pictures directory..."
+cp -r Pictures /home/jwno/ || error "Failed to copy Pictures directory"
 
 # Copy TLP configuration
 log "Setting up TLP configuration..."
@@ -174,9 +186,8 @@ sudo cp tlp.conf /etc/tlp.conf || error "Failed to copy TLP configuration"
 # Set proper ownership for user files
 log "Setting file ownership..."
 sudo chown -R jwno:jwno /home/jwno/.config
-sudo chown -R jwno:jwno /home/jwno/.themes
-sudo chown -R jwno:jwno /home/jwno/.icons
-sudo chown -R jwno:jwno /home/jwno/.mozilla
+sudo chown -R jwno:jwno /home/jwno/Documents
+sudo chown -R jwno:jwno /home/jwno/Pictures
 sudo chown jwno:jwno /home/jwno/.vimrc
 sudo chown jwno:jwno /home/jwno/.bashrc
 
@@ -191,4 +202,17 @@ log "Configuring LightDM..."
 sudo sed -i 's/#greeter-session=example-gtk-gnome/greeter-session=unity-greeter/' /etc/lightdm/lightdm.conf || error "Failed to configure LightDM greeter"
 
 log "Setup completed successfully!"
+
+# Clean up copied files from base_deb directory
+log "Cleaning up source files..."
+rm -f vimrc || warn "Failed to remove vimrc"
+rm -f bashrc || warn "Failed to remove bashrc"
+rm -f tlp.conf || warn "Failed to remove tlp.conf"
+rm -rf Documents || warn "Failed to remove Documents directory"
+rm -rf Pictures || warn "Failed to remove Pictures directory"
+rm -rf themes || warn "Failed to remove themes directory"
+rm -rf icons || warn "Failed to remove icons directory"
+rm -rf config || warn "Failed to remove config directory"
+
+log "Cleanup completed!"
 log "Please reboot to start the graphical environment."
