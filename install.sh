@@ -73,13 +73,9 @@ sudo apt install -y \
     gimp \
     git \
     imv \
-    libx11-dev \
-    libxft-dev \
-    libxinerama-dev \
     make \
     network-manager \
     nftables \
-    picom \
     pipewire \
     pipewire-alsa \
     pipewire-pulse \
@@ -91,8 +87,9 @@ sudo apt install -y \
     tlp \
     tlp-rdw \
     vim \
-    wl-clipboard \
     wget \
+    wireplumber \
+    wl-clipboard \
     zram-tools || error "Failed to install essential packages"
 
 # Add flathub repository
