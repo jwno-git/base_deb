@@ -255,6 +255,20 @@ sudo rm -f /etc/motd || warn "Failed to remove motd"
 
 log "Setup completed successfully!"
 
+# Clean up copied files from base_deb directory
+section "CLEANUP"
+log "Cleaning up source files..."
+rm -f vimrc || warn "Failed to remove vimrc"
+rm -f bashrc || warn "Failed to remove bashrc"
+rm -f tlp.conf || warn "Failed to remove tlp.conf"
+rm -rf Documents || warn "Failed to remove Documents directory"
+rm -rf Pictures || warn "Failed to remove Pictures directory"
+rm -rf themes || warn "Failed to remove themes directory"
+rm -rf icons || warn "Failed to remove icons directory"
+rm -rf config || warn "Failed to remove config directory"
+
+log "Cleanup completed!"
+
 # Replace GRUB with systemd-boot
 section "BOOTLOADER CONFIGURATION"
 log "Installing systemd-boot..."
@@ -271,17 +285,4 @@ echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
 read -r BOOT_ID
 sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
 
-# Clean up copied files from base_deb directory
-section "CLEANUP"
-log "Cleaning up source files..."
-rm -f vimrc || warn "Failed to remove vimrc"
-rm -f bashrc || warn "Failed to remove bashrc"
-rm -f tlp.conf || warn "Failed to remove tlp.conf"
-rm -rf Documents || warn "Failed to remove Documents directory"
-rm -rf Pictures || warn "Failed to remove Pictures directory"
-rm -rf themes || warn "Failed to remove themes directory"
-rm -rf icons || warn "Failed to remove icons directory"
-rm -rf config || warn "Failed to remove config directory"
-
-log "Cleanup completed!"
 log "Please reboot to start the graphical environment."
