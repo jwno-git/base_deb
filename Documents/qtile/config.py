@@ -27,7 +27,7 @@ def autostart():
     subprocess.run(["xsetroot", "-cursor_name", "left_ptr"])
     subprocess.Popen(["nm-applet"]) 
     subprocess.Popen(["flatpak", "run", "org.flameshot.Flameshot"])
-    subprocess.Popen(["sh", "-c", "while true; do xclip -selection clipboard -t text/plain -o 2>/dev/null | cliphist store 2>/dev/null; sleep 1; done"])
+    subprocess.Popen(["sh", "-c", "while true; do wl-paste -t text/plain 2>/dev/null | cliphist store 2>/dev/null; sleep 1; done"])
     subprocess.Popen(["dunst"])
     # Autostart systray applications
     # subprocess.Popen(["flatpak", "run", "com.discordapp.Discord"])
