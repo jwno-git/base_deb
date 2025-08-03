@@ -98,8 +98,13 @@ sudo apt install -y \
 
 # Install Python packages
 section "PYTHON PACKAGES"
-log "Installing Python packages..."
-pip3 install --user pulsectl-asyncio || error "Failed to install pulsectl-asyncio"
+log "Creating Python virtual environment..."
+python3 -m venv /home/jwno/.local/venv || error "Failed to create virtual environment"
+
+log "Installing Python packages in virtual environment..."
+source /home/jwno/.local/venv/bin/activate || error "Failed to activate virtual environment"
+pip install pulsectl-asyncio || error "Failed to install pulsectl-asyncio"
+deactivate
 
 # Add flathub repository
 section "FLATPAK SETUP"
