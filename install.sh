@@ -83,13 +83,14 @@ sudo apt install -y \
     psmisc \
     python3-pip \
     python3-venv \
-    qtile \
     tlp \
     tlp-rdw \
     vim \
+    wayland-protocols \
     wget \
     wireplumber \
     wl-clipboard \
+    xwayland \
     zram-tools || error "Failed to install essential packages"
 
 # Add flathub repository
@@ -111,6 +112,25 @@ git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyo
 cd ble.sh
 sudo make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
 cd /home/jwno/base_deb
+
+# Install Qtile and Python dependencies
+section "QTILE INSTALLATION"
+log "Creating Python virtual environment for Qtile..."
+python3 -m venv /home/jwno/.local/qtile-venv || error "Failed to create qtile virtual environment"
+
+log "Installing Qtile and dependencies in virtual environment..."
+source /home/jwno/.local/qtile-venv/bin/activate || error "Failed to activate qtile virtual environment"
+pip install --upgrade pip || error "Failed to upgrade pip"
+pip install qtile pywlroots || error "Failed to install qtile and pywlroots"
+deactivate
+
+log "Creating qtile launcher script..."
+sudo tee /usr/local/bin/qtile >/dev/null <<EOF || error "Failed to create qtile launcher"
+#!/bin/bash
+source /home/jwno/.local/qtile-venv/bin/activate
+exec /home/jwno/.local/qtile-venv/bin/qtile "\$@"
+EOF
+sudo chmod +x /usr/local/bin/qtile || error "Failed to make qtile launcher executable"
 
 # Copy dotfiles and configurations
 section "DOTFILES CONFIGURATION"
