@@ -216,22 +216,6 @@ sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
 sudo systemctl enable nftables || error "Failed to enable nftables"
 
-# Replace GRUB with systemd-boot
-section "BOOTLOADER CONFIGURATION"
-log "Installing systemd-boot..."
-sudo apt install -y systemd-boot || error "Failed to install systemd-boot"
-sudo bootctl install || error "Failed to install systemd-boot bootloader"
-
-log "Removing GRUB..."
-sudo apt purge --allow-remove-essential -y grub* shim-signed ifupdown nano os-prober vim-tiny zutty || error "Failed to remove GRUB packages"
-sudo apt autoremove --purge -y || error "Failed to autoremove packages"
-
-log "Current EFI boot entries:"
-sudo efibootmgr
-echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
-read -r BOOT_ID
-sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
-
 # Configure network and firewall
 section "NETWORK AND FIREWALL SETUP"
 log "Configuring NetworkManager..."
@@ -270,6 +254,22 @@ log "Removing default motd..."
 sudo rm -f /etc/motd || warn "Failed to remove motd"
 
 log "Setup completed successfully!"
+
+# Replace GRUB with systemd-boot
+section "BOOTLOADER CONFIGURATION"
+log "Installing systemd-boot..."
+sudo apt install -y systemd-boot || error "Failed to install systemd-boot"
+sudo bootctl install || error "Failed to install systemd-boot bootloader"
+
+log "Removing GRUB..."
+sudo apt purge --allow-remove-essential -y grub* shim-signed ifupdown nano os-prober vim-tiny zutty || error "Failed to remove GRUB packages"
+sudo apt autoremove --purge -y || error "Failed to autoremove packages"
+
+log "Current EFI boot entries:"
+sudo efibootmgr
+echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
+read -r BOOT_ID
+sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
 
 # Clean up copied files from base_deb directory
 section "CLEANUP"
