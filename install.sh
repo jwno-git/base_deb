@@ -77,6 +77,7 @@ sudo apt install -y \
     libpangocairo-1.0-0 \
     make \
     network-manager \
+    network-manager-gnome \
     nftables \
     picom \
     pkg-config \
