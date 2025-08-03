@@ -95,6 +95,7 @@ sudo apt install -y \
     xserver-xorg-input-libinput \
     xserver-xorg-video-amdgpu \
     xserver-xorg-video-fbdev \
+    xterm \
     zram-tools || error "Failed to install essential packages"
 
 # Add flathub repository
