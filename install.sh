@@ -74,6 +74,7 @@ sudo apt install -y \
     libx11-dev \
     libxft-dev \
     libxinerama-dev \
+    libpangocairo-1.0-0 \
     make \
     network-manager \
     nftables \
@@ -81,6 +82,10 @@ sudo apt install -y \
     pkg-config \
     psmisc \
     pulseaudio \
+    python3-cffi \
+    python3-cairocffi \
+    python3-xcffib \
+    qtile \
     sxiv \
     tlp \
     tlp-rdw \
