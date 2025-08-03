@@ -34,7 +34,7 @@ def autostart():
     # subprocess.Popen(["flatpak", "run", "com.protonvpn.www"])
 
 mod = "mod4"
-terminal = "st"
+terminal = "foot"
 
 # Keybinds
 keys = [
