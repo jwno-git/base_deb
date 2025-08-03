@@ -65,7 +65,7 @@ sudo apt install -y \
     dunst \
     fastfetch \
     fbset \
-    firefox \
+    firefox-esr-l10n-en-ca \
     flatpak \
     fonts-font-awesome \
     fonts-hack \
