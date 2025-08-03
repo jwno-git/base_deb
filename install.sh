@@ -72,10 +72,7 @@ sudo apt install -y \
     gawk \
     gimp \
     git \
-    imagemagick \
     imv \
-    libsixel-bin \
-    libsixel-dev \
     libx11-dev \
     libxft-dev \
     libxinerama-dev \
