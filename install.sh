@@ -12,6 +12,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+section() {
+    echo -e "${BLUE}[SECTION]${NC} $1"
+}
+
 log() {
     echo -e "${GREEN}[INFO]${NC} $1"
 }
@@ -40,6 +44,7 @@ fi
 log "Starting Debian Trixie setup..."
 
 # Update system
+section "SYSTEM UPDATE"
 log "Updating package lists..."
 sudo apt update || error "Failed to update package lists"
 
@@ -47,6 +52,7 @@ log "Upgrading system..."
 sudo apt upgrade -y || error "Failed to upgrade system"
 
 # Install essential packages
+section "PACKAGE INSTALLATION"
 log "Installing essential packages..."
 sudo apt install -y \
     blueman \
@@ -93,10 +99,12 @@ sudo apt install -y \
     zram-tools || error "Failed to install essential packages"
 
 # Install Python packages
+section "PYTHON PACKAGES"
 log "Installing Python packages..."
 pip3 install --user pulsectl-asyncio || error "Failed to install pulsectl-asyncio"
 
 # Add flathub repository
+section "FLATPAK SETUP"
 log "Adding Flathub repository..."
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || error "Failed to add Flathub repository"
 
@@ -106,6 +114,7 @@ flatpak install -y flathub org.flameshot.Flameshot || error "Failed to install F
 flatpak install -y flathub com.protonvpn.www || error "Failed to install ProtonVPN"
 
 # Build and install ST terminal
+section "SUCKLESS TERMINAL BUILD"
 log "Building ST terminal..."
 mkdir -p /home/jwno/src
 cd /home/jwno/src
@@ -127,6 +136,7 @@ patch -p1 < st-scrollback-mouse-0.9.2.diff || error "Failed to apply scrollback 
 make clean install || error "Failed to build and install ST"
 
 # Install ble.sh
+section "BLE.SH INSTALLATION"
 log "Installing ble.sh..."
 cd /home/jwno/src
 git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git || error "Failed to clone ble.sh repository"
@@ -135,6 +145,7 @@ make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
 cd /home/jwno/base_deb
 
 # Copy dotfiles and configurations
+section "DOTFILES CONFIGURATION"
 log "Setting up dotfiles and configurations..."
 cd /home/jwno/base_deb
 
@@ -159,6 +170,7 @@ cp -r config/gtk-4.0 /home/jwno/.config/ || error "Failed to copy gtk-4.0 config
 cp -r Documents/qtile /home/jwno/.config/ || error "Failed to copy qtile config"
 
 # Install themes and icons system-wide
+section "THEMES AND ICONS"
 log "Installing themes system-wide..."
 cd themes
 tar -xf Tokyonight-Dark.tar.xz || error "Failed to extract Tokyonight-Dark theme"
@@ -184,6 +196,7 @@ log "Setting up TLP configuration..."
 sudo cp tlp.conf /etc/tlp.conf || error "Failed to copy TLP configuration"
 
 # Set proper ownership for user files
+section "FILE OWNERSHIP"
 log "Setting file ownership..."
 sudo chown -R jwno:jwno /home/jwno/.config
 sudo chown -R jwno:jwno /home/jwno/Documents
@@ -192,7 +205,9 @@ sudo chown jwno:jwno /home/jwno/.vimrc
 sudo chown jwno:jwno /home/jwno/.bashrc
 
 # Enable services
+section "SERVICE CONFIGURATION"
 log "Enabling services..."
+sudo systemctl enable bluetooth || error "Failed to enable Bluetooth"
 sudo systemctl enable lightdm || error "Failed to enable lightdm"
 sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
@@ -204,6 +219,7 @@ sudo sed -i 's/#greeter-session=example-gtk-gnome/greeter-session=unity-greeter/
 log "Setup completed successfully!"
 
 # Clean up copied files from base_deb directory
+section "CLEANUP"
 log "Cleaning up source files..."
 rm -f vimrc || warn "Failed to remove vimrc"
 rm -f bashrc || warn "Failed to remove bashrc"
