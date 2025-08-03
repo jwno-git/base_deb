@@ -24,10 +24,8 @@ def get_battery_capacity_once():
 
 @hook.subscribe.startup_once
 def autostart():
-    subprocess.run(["xsetroot", "-cursor_name", "left_ptr"])
     subprocess.Popen(["nm-applet"]) 
     subprocess.Popen(["flatpak", "run", "org.flameshot.Flameshot"])
-    subprocess.Popen(["sh", "-c", "while true; do wl-paste -t text/plain 2>/dev/null | cliphist store 2>/dev/null; sleep 1; done"])
     subprocess.Popen(["dunst"])
     # Autostart systray applications
     # subprocess.Popen(["flatpak", "run", "com.discordapp.Discord"])
@@ -54,11 +52,11 @@ keys = [
     # Key([mod], "n",),
     # Key([mod], "o",), 
     # Key([mod], "p",),
-    Key([mod], "q", lazy.window.kill(),
-    Key([mod, "shift"], "q", lazy.shutdown(),
+    Key([mod], "q", lazy.window.kill()),
+    Key([mod, "shift"], "q", lazy.shutdown()),
     # Key([mod], "r",),
-    Key([mod, "control"], "r", lazy.reload_config(),
-    Key([mod], "s", lazy.spawn("flatpak run org.flameshot.Flameshot gui"),
+    Key([mod, "control"], "r", lazy.reload_config()),
+    Key([mod], "s", lazy.spawn("flatpak run org.flameshot.Flameshot gui")),
     # Key([mod], "t",),
     # Key([mod], "u",),
     # Key([mod], "v",),
@@ -66,16 +64,13 @@ keys = [
     # Key([mod], "x",),
     # Key([mod], "y",),
     # Key([mod], "z",),
-    Key([mod], "return", lazy.next_layout(),
-    Key([mod], "space", lazy.group['scratchpad'].dropdown_toggle('terminal'), 
-    Key([mod], "Tab", lazy.layout.next(),
-    Key([mod], "Right", lazy.screen.next_group(),
-    Key([mod], "Left", lazy.screen.prev_group(),
-    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 64+"),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 64-"),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("wpctl set-volume @DEFAULT_SINK@ 0.1+"),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("wpctl set-volume @DEFAULT_SINK@ 0.1-"),
-    Key([], "XF86AudioMute", lazy.spawn("wpctl set-mute @DEFAULT_SINK@ toggle"),
+    Key([mod], "return", lazy.next_layout()),
+    Key([mod], "space", lazy.group['scratchpad'].dropdown_toggle('terminal')), 
+    Key([mod], "Tab", lazy.layout.next()),
+    Key([mod], "Right", lazy.screen.next_group()),
+    Key([mod], "Left", lazy.screen.prev_group()),
+    Key([], "XF86MonBrightnessUp", lazy.spawn("brightnessctl set 64+")),
+    Key([], "XF86MonBrightnessDown", lazy.spawn("brightnessctl set 64-")),
 ]
 
 # Add key bindings to switch VTs in Wayland.
@@ -186,36 +181,6 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-		widget.PulseVolume(
-    			background="#00000000",
-    			foreground="#FFFFFF",
-    			emoji=True,
-    			emoji_list=['🔇', '🔈', '🔉', '🔊'],
-    			unmute_format="{volume}%",
-    			mute_format="MUTE",
-    			mouse_callbacks={
-        		'Button1': lambda: qtile.spawn('pavucontrol')
-    			},	
-		),
-		widget.TextBox(
-			text=" ",
-    			background="#00000000",
-    			foreground="#B8A000",
-    			padding=0,
-		),
-		widget.Backlight(
-			background="#00000000",
-			foreground="#FFFFFF",
-			fmt="{}",
-			backlight_name="amdgpu_bl0",
-			update_interval=0.1,
-		),
-		widget.TextBox(
-			text="   ",
-    			background="#00000000",
-    			foreground="#666666",
-    			padding=0,
-		),
 		widget.TextBox(
     			text=get_battery_capacity_once(),
     			background="#00000000",
