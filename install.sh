@@ -73,8 +73,6 @@ sudo apt install -y \
     gawk \
     gimp \
     git \
-    gnome-software-plugin-flatpak \
-    gpg \
     libx11-dev \
     libxft-dev \
     libxinerama-dev \
