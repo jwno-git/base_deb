@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Debian Trixie Minimal Wayland Desktop Setup Script
+# Debian Trixie Minimal Desktop Setup Script
 # Run as user jwno from /home/jwno/base_deb directory
 
 set -e  # Exit on any error
@@ -39,7 +39,7 @@ if [[ "$PWD" != "/home/jwno/base_deb" ]]; then
     error "Script must be run from /home/jwno/base_deb directory"
 fi
 
-log "Starting Debian Trixie Wayland setup..."
+log "Starting Debian Trixie setup..."
 
 # Update system
 section "SYSTEM UPDATE"
@@ -68,29 +68,33 @@ sudo apt install -y \
     fonts-font-awesome \
     fonts-hack \
     fonts-terminus \
-    foot \
     gawk \
     gimp \
     git \
-    imv \
+    libx11-dev \
+    libxft-dev \
+    libxinerama-dev \
     make \
     network-manager \
     nftables \
-    pipewire \
-    pipewire-alsa \
-    pipewire-pulse \
+    picom \
     pkg-config \
     psmisc \
-    python3-pip \
-    python3-venv \
+    pulseaudio \
+    sxiv \
     tlp \
     tlp-rdw \
     vim \
-    wayland-protocols \
     wget \
-    wireplumber \
-    wl-clipboard \
-    xwayland \
+    x11-session-utils \
+    x11-utils \
+    x11-xserver-utils \
+    xclip \
+    xinit \
+    xserver-xorg-core \
+    xserver-xorg-input-libinput \
+    xserver-xorg-video-amdgpu \
+    xserver-xorg-video-fbdev \
     zram-tools || error "Failed to install essential packages"
 
 # Add flathub repository
@@ -103,38 +107,41 @@ log "Installing Flatpak applications..."
 flatpak install -y flathub org.flameshot.Flameshot || error "Failed to install Flameshot"
 flatpak install -y flathub com.protonvpn.www || error "Failed to install ProtonVPN"
 
+# Build and install ST terminal
+section "SUCKLESS TERMINAL BUILD"
+log "Building ST terminal..."
+mkdir -p /home/jwno/src
+cd /home/jwno/src
+git clone https://git.suckless.org/st || error "Failed to clone ST repository"
+cd st
+
+# Download and apply patches
+log "Downloading and applying ST patches..."
+wget https://st.suckless.org/patches/blinking_cursor/st-blinking_cursor-20230819-3a6d6d7.diff || error "Failed to download blinking cursor patch"
+wget https://st.suckless.org/patches/bold-is-not-bright/st-bold-is-not-bright-20190127-3be4cf1.diff || error "Failed to download bold-is-not-bright patch"
+wget https://st.suckless.org/patches/scrollback/st-scrollback-mouse-0.9.2.diff || error "Failed to download scrollback mouse patch"
+wget https://st.suckless.org/patches/scrollback/st-scrollback-0.9.2.diff || error "Failed to download scrollback patch"
+
+patch -p1 < st-blinking_cursor-20230819-3a6d6d7.diff || error "Failed to apply blinking cursor patch"
+patch -p1 < st-bold-is-not-bright-20190127-3be4cf1.diff || error "Failed to apply bold-is-not-bright patch"
+patch -p1 < st-scrollback-0.9.2.diff || error "Failed to apply scrollback patch"
+patch -p1 < st-scrollback-mouse-0.9.2.diff || error "Failed to apply scrollback mouse patch"
+
+sudo make clean install || error "Failed to build and install ST"
+
 # Install ble.sh
 section "BLE.SH INSTALLATION"
 log "Installing ble.sh..."
-mkdir -p /home/jwno/src
 cd /home/jwno/src
 git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git || error "Failed to clone ble.sh repository"
 cd ble.sh
 sudo make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
 cd /home/jwno/base_deb
 
-# Install Qtile and Python dependencies
-section "QTILE INSTALLATION"
-log "Creating Python virtual environment for Qtile..."
-python3 -m venv /home/jwno/.local/qtile-venv || error "Failed to create qtile virtual environment"
-
-log "Installing Qtile and dependencies in virtual environment..."
-source /home/jwno/.local/qtile-venv/bin/activate || error "Failed to activate qtile virtual environment"
-pip install --upgrade pip || error "Failed to upgrade pip"
-pip install qtile pywlroots || error "Failed to install qtile and pywlroots"
-deactivate
-
-log "Creating qtile launcher script..."
-sudo tee /usr/local/bin/qtile >/dev/null <<EOF || error "Failed to create qtile launcher"
-#!/bin/bash
-source /home/jwno/.local/qtile-venv/bin/activate
-exec /home/jwno/.local/qtile-venv/bin/qtile "\$@"
-EOF
-sudo chmod +x /usr/local/bin/qtile || error "Failed to make qtile launcher executable"
-
 # Copy dotfiles and configurations
 section "DOTFILES CONFIGURATION"
 log "Setting up dotfiles and configurations..."
+cd /home/jwno/base_deb
 
 # Copy vim configuration
 log "Setting up vim configuration..."
@@ -154,15 +161,6 @@ log "Setting up application configurations..."
 cp -r config/fastfetch /home/jwno/.config/ || error "Failed to copy fastfetch config"
 cp -r config/gtk-3.0 /home/jwno/.config/ || error "Failed to copy gtk-3.0 config"
 cp -r config/gtk-4.0 /home/jwno/.config/ || error "Failed to copy gtk-4.0 config"
-cp -r Documents/qtile /home/jwno/.config/ || error "Failed to copy qtile config"
-
-# Copy Documents directory
-log "Setting up Documents directory..."
-cp -r Documents /home/jwno/ || error "Failed to copy Documents directory"
-
-# Copy Pictures directory
-log "Setting up Pictures directory..."
-cp -r Pictures /home/jwno/ || error "Failed to copy Pictures directory"
 
 # Install themes and icons system-wide
 section "THEMES AND ICONS"
@@ -177,6 +175,14 @@ tar -xf BreezeX-RosePine-Linux.tar.xz || error "Failed to extract BreezeX-RosePi
 sudo cp -r BreezeX-RosePine-Linux /usr/share/icons/ || error "Failed to install BreezeX-RosePine-Linux icons"
 
 cd /home/jwno/base_deb
+
+# Copy Documents directory
+log "Setting up Documents directory..."
+cp -r Documents /home/jwno/ || error "Failed to copy Documents directory"
+
+# Copy Pictures directory
+log "Setting up Pictures directory..."
+cp -r Pictures /home/jwno/ || error "Failed to copy Pictures directory"
 
 # Copy TLP configuration
 log "Setting up TLP configuration..."
@@ -198,12 +204,6 @@ sudo systemctl enable bluetooth || error "Failed to enable Bluetooth"
 sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
 sudo systemctl enable nftables || error "Failed to enable nftables"
-
-# Configure PipeWire
-log "Configuring PipeWire..."
-systemctl --user enable pipewire || error "Failed to enable PipeWire"
-systemctl --user enable pipewire-pulse || error "Failed to enable PipeWire PulseAudio compatibility"
-systemctl --user enable wireplumber || error "Failed to enable WirePlumber"
 
 # Configure network and firewall
 section "NETWORK AND FIREWALL SETUP"
@@ -274,5 +274,4 @@ echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
 read -r BOOT_ID
 sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
 
-log "Wayland setup completed!"
-log "Please reboot and start qtile with: qtile start -b wayland"
+log "Please reboot to start the graphical environment."
