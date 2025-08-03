@@ -38,6 +38,7 @@ export QT_STYLE_OVERRIDE=adwaita-dark  # Makes Qt apps look more consistent
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+alias engage='qtile start -b wayland'
 
 # User-specific functions (only for regular user, not root)
 if [[ $EUID -ne 0 ]]; then
@@ -64,64 +65,6 @@ if [[ $EUID -ne 0 ]]; then
     }
     ser_status() {
     	service_status | less
-    }
-
-    # Custom snapshot with description
-    snap() {
-        if [ -z "$1" ]; then 
-            echo "Usage: snap <description>"
-            echo "Example: snap BaseInstall"
-            return 1
-        fi
-        sudo btrfs subvolume snapshot / "/.snapshots/$1" && \
-        echo "✓ Created snapshot: $1"
-    }
-
-    # List snapshots using native btrfs command
-    snapl() {
-        sudo btrfs subvolume list /.snapshots
-    }
-
-    # Remove snapshot
-    snaprm() {
-        if [ -z "$1" ]; then
-            echo "Usage: snaprm <snapshot_name>"
-            echo "Available snapshots:"
-            sudo find /.snapshots -maxdepth 1 -type d -printf "  %f\n" | grep -v "^  $"
-            return 1
-        fi
-        if [ ! -d "/.snapshots/$1" ]; then
-            echo "Error: Snapshot '$1' does not exist"
-            return 1
-        fi
-        echo "Removing snapshot: $1"
-        sudo btrfs subvolume delete "/.snapshots/$1" && \
-        echo "✓ Removed snapshot: $1"
-    }
-
-    # Show snapshot disk usage
-    snapdu() {
-        echo "=== Snapshot Disk Usage ==="
-        if [ -n "$1" ]; then
-            # Show usage for specific snapshot
-            echo "Usage for snapshot: $1"
-            sudo du -sh "/.snapshots/$1" 2>/dev/null || \
-            echo "Snapshot '$1' not found"
-        else
-            # Show usage for all snapshots
-            echo "Individual snapshot sizes:"
-            sudo find /.snapshots -maxdepth 1 -type d -name "*" | \
-            while read -r dir; do
-                if [ "$dir" != "/.snapshots" ]; then
-                    local name=$(basename "$dir")
-                    local size=$(sudo du -sh "$dir" 2>/dev/null | cut -f1)
-                    printf "  %-20s %s\n" "$name" "$size"
-                fi
-            done
-            echo ""
-            echo "Total snapshots directory size:"
-            sudo du -sh /.snapshots
-        fi
     }
 fi
 
