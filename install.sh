@@ -83,6 +83,7 @@ sudo apt install -y \
     make \
     network-manager \
     nftables \
+    picom \
     pkg-config \
     psmisc \
     pulseaudio \
@@ -92,7 +93,6 @@ sudo apt install -y \
     sxiv \
     tlp \
     tlp-rdw \
-    unity-greeter \
     vim \
     wget \
     xclip \
@@ -212,9 +212,9 @@ sudo systemctl enable lightdm || error "Failed to enable lightdm"
 sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
 
-# Set LightDM to use unity greeter
+# Set LightDM to use default greeter
 log "Configuring LightDM..."
-sudo sed -i 's/#greeter-session=example-gtk-gnome/greeter-session=unity-greeter/' /etc/lightdm/lightdm.conf || error "Failed to configure LightDM greeter"
+# Using default GTK greeter - no additional configuration needed
 
 log "Setup completed successfully!"
 
