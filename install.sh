@@ -211,6 +211,60 @@ sudo systemctl enable bluetooth || error "Failed to enable Bluetooth"
 sudo systemctl enable lightdm || error "Failed to enable lightdm"
 sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
+sudo systemctl enable nftables || error "Failed to enable nftables"
+
+# Configure network and firewall
+section "NETWORK AND FIREWALL SETUP"
+log "Configuring NetworkManager..."
+sudo sed -i 's/managed=false/managed=true/' /etc/NetworkManager/NetworkManager.conf || error "Failed to configure NetworkManager"
+
+log "Setting up network interfaces..."
+sudo tee /etc/network/interfaces >/dev/null <<EOF || error "Failed to setup network interfaces"
+source /etc/network/interfaces.d/*
+auto lo
+iface lo inet loopback
+EOF
+
+log "Setting up firewall rules..."
+sudo tee /etc/nftables.conf >/dev/null <<EOF || error "Failed to setup nftables configuration"
+#!/usr/sbin/nft -f
+flush ruleset
+table inet filter {
+    chain input { type filter hook input priority filter; policy drop;
+        iif "lo" accept
+        ct state established,related accept
+        ip protocol icmp accept
+        ip6 nexthdr ipv6-icmp accept
+        udp sport {53,67,123} accept
+        tcp sport 53 accept
+        udp sport 67 udp dport 68 accept
+    }
+    chain forward { type filter hook forward priority filter; policy drop; }
+    chain output { type filter hook output priority filter; policy accept; }
+}
+EOF
+
+log "Applying firewall rules..."
+sudo nft -f /etc/nftables.conf || error "Failed to apply nftables rules"
+
+log "Removing default motd..."
+sudo rm -f /etc/motd || warn "Failed to remove motd"
+
+# Replace GRUB with systemd-boot
+section "BOOTLOADER CONFIGURATION"
+log "Installing systemd-boot..."
+sudo apt install -y systemd-boot || error "Failed to install systemd-boot"
+sudo bootctl install || error "Failed to install systemd-boot bootloader"
+
+log "Removing GRUB..."
+sudo apt purge --allow-remove-essential -y grub* shim-signed ifupdown nano os-prober vim-tiny zutty || error "Failed to remove GRUB packages"
+sudo apt autoremove --purge -y || error "Failed to autoremove packages"
+
+log "Current EFI boot entries:"
+sudo efibootmgr
+echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
+read -r BOOT_ID
+sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
 
 # Set LightDM to use default greeter
 log "Configuring LightDM..."
