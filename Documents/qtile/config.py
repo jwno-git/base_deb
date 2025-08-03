@@ -47,7 +47,7 @@ keys = [
     # Key([mod], "i",),
     # Key([mod], "j",),
     # Key([mod], "k",),
-    # Key([mod], "l", lazy.spawn("slock"),
+    # Key([mod], "l",),
     # Key([mod], "m",),
     # Key([mod], "n",),
     # Key([mod], "o",), 
@@ -175,12 +175,6 @@ screens = [
     			background='#00000000',
 		),
 		widget.Spacer(),
-		widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
-                ),
 		widget.TextBox(
     			text=get_battery_capacity_once(),
     			background="#00000000",
