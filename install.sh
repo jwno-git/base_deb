@@ -136,7 +136,7 @@ patch -p1 < st-bold-is-not-bright-20190127-3be4cf1.diff || error "Failed to appl
 patch -p1 < st-scrollback-0.9.2.diff || error "Failed to apply scrollback patch"
 patch -p1 < st-scrollback-mouse-0.9.2.diff || error "Failed to apply scrollback mouse patch"
 
-make clean install || error "Failed to build and install ST"
+sudo make clean install || error "Failed to build and install ST"
 
 # Install ble.sh
 section "BLE.SH INSTALLATION"
@@ -144,7 +144,7 @@ log "Installing ble.sh..."
 cd /home/jwno/src
 git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyoga/ble.sh.git || error "Failed to clone ble.sh repository"
 cd ble.sh
-make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
+sudo make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
 cd /home/jwno/base_deb
 
 # Copy dotfiles and configurations
@@ -216,6 +216,22 @@ sudo systemctl enable tlp || error "Failed to enable TLP"
 sudo systemctl enable NetworkManager || error "Failed to enable NetworkManager"
 sudo systemctl enable nftables || error "Failed to enable nftables"
 
+# Replace GRUB with systemd-boot
+section "BOOTLOADER CONFIGURATION"
+log "Installing systemd-boot..."
+sudo apt install -y systemd-boot || error "Failed to install systemd-boot"
+sudo bootctl install || error "Failed to install systemd-boot bootloader"
+
+log "Removing GRUB..."
+sudo apt purge --allow-remove-essential -y grub* shim-signed ifupdown nano os-prober vim-tiny zutty || error "Failed to remove GRUB packages"
+sudo apt autoremove --purge -y || error "Failed to autoremove packages"
+
+log "Current EFI boot entries:"
+sudo efibootmgr
+echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
+read -r BOOT_ID
+sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
+
 # Configure network and firewall
 section "NETWORK AND FIREWALL SETUP"
 log "Configuring NetworkManager..."
@@ -252,26 +268,6 @@ sudo nft -f /etc/nftables.conf || error "Failed to apply nftables rules"
 
 log "Removing default motd..."
 sudo rm -f /etc/motd || warn "Failed to remove motd"
-
-# Replace GRUB with systemd-boot
-section "BOOTLOADER CONFIGURATION"
-log "Installing systemd-boot..."
-sudo apt install -y systemd-boot || error "Failed to install systemd-boot"
-sudo bootctl install || error "Failed to install systemd-boot bootloader"
-
-log "Removing GRUB..."
-sudo apt purge --allow-remove-essential -y grub* shim-signed ifupdown nano os-prober vim-tiny zutty || error "Failed to remove GRUB packages"
-sudo apt autoremove --purge -y || error "Failed to autoremove packages"
-
-log "Current EFI boot entries:"
-sudo efibootmgr
-echo "Enter GRUB boot ID to delete (check efibootmgr output above):"
-read -r BOOT_ID
-sudo efibootmgr -b "$BOOT_ID" -B || error "Failed to delete GRUB boot entry"
-
-# Set LightDM to use default greeter
-log "Configuring LightDM..."
-# Using default GTK greeter - no additional configuration needed
 
 log "Setup completed successfully!"
 
