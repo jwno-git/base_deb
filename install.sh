@@ -74,6 +74,9 @@ sudo apt install -y \
     libxft-dev \
     libxinerama-dev \
     libxrandr-dev \
+    libpangocairo-1.0-0 \
+    libcairo2-dev \
+    libffi-dev \
     make \
     mesa-va-drivers \
     network-manager \
@@ -83,6 +86,13 @@ sudo apt install -y \
     pkg-config \
     psmisc \
     pulseaudio \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    python3-wheel \
+    python3-setuptools \
+    python3-cffi \
     sxiv \
     tlp \
     tlp-rdw \
@@ -175,6 +185,16 @@ git clone --recursive --depth 1 --shallow-submodules https://github.com/akinomyo
 cd ble.sh
 sudo make install PREFIX=/usr/local || error "Failed to build and install ble.sh"
 cd /home/jwno/base_deb
+
+# Install qtile in virtual environment  
+section "QTILE INSTALLATION"
+log "Creating qtile virtual environment..."
+mkdir -p /home/jwno/.local/venv
+python3 -m venv /home/jwno/.local/venv/qtile || error "Failed to create qtile venv"
+
+log "Installing qtile and dependencies..."
+/home/jwno/.local/venv/qtile/bin/pip install --upgrade pip || error "Failed to upgrade pip"
+/home/jwno/.local/venv/qtile/bin/pip install qtile psutil cairocffi dbus-next || error "Failed to install qtile and dependencies"
 
 # Copy dotfiles and configurations
 section "DOTFILES CONFIGURATION"
