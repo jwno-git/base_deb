@@ -58,7 +58,6 @@ sudo apt install -y \
     brightnessctl \
     btop \
     build-essential \
-    cliphist \
     curl \
     dunst \
     fastfetch \
@@ -70,12 +69,13 @@ sudo apt install -y \
     fonts-terminus \
     gawk \
     gimp \
-    git \
+    libimlib2-dev \
     libx11-dev \
     libxft-dev \
     libxinerama-dev \
-    libpangocairo-1.0-0 \
+    libxrandr-dev \
     make \
+    mesa-va-drivers \
     network-manager \
     network-manager-gnome \
     nftables \
@@ -83,13 +83,10 @@ sudo apt install -y \
     pkg-config \
     psmisc \
     pulseaudio \
-    python3-cffi \
-    python3-cairocffi \
-    python3-xcffib \
-    qtile \
     sxiv \
     tlp \
     tlp-rdw \
+    vainfo \
     vim \
     wget \
     x11-session-utils \
@@ -112,7 +109,7 @@ sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flat
 # Install Flatpak applications
 log "Installing Flatpak applications..."
 flatpak install -y flathub org.flameshot.Flameshot || error "Failed to install Flameshot"
-flatpak install -y flathub com.protonvpn.www || error "Failed to install ProtonVPN"
+flatpak install flathub com.notesnook.Notesnook || error "Failed to install NotesNook"
 
 # Build and install ST terminal
 section "SUCKLESS TERMINAL BUILD"
@@ -135,6 +132,40 @@ patch -p1 < st-scrollback-0.9.2.diff || error "Failed to apply scrollback patch"
 patch -p1 < st-scrollback-mouse-0.9.2.diff || error "Failed to apply scrollback mouse patch"
 
 sudo make clean install || error "Failed to build and install ST"
+
+# Build and install dmenu
+section "DMENU BUILD"
+log "Building dmenu..."
+cd /home/jwno/src
+git clone https://git.suckless.org/dmenu || error "Failed to clone dmenu repository"
+cd dmenu
+# Download and apply patches
+log "Downloading and applying dmenu patches..."
+wget https://tools.suckless.org/dmenu/patches/line-height/dmenu-lineheight-5.2.diff || error "Failed to download lineheight patch"
+patch -p1 < dmenu-lineheight-5.2.diff || error "Failed to apply lineheight patch"
+# Configure colors and height
+log "Configuring dmenu colors and height..."
+sed -i 's/#bbbbbb/#FFFFFF/g' config.def.h || error "Failed to set text color"
+sed -i 's/#222222/#000000/g' config.def.h || error "Failed to set background color"
+sed -i 's/#005577/#67608B/g' config.def.h || error "Failed to set selection color"
+sed -i 's/static unsigned int lineheight = [0-9]*/static unsigned int lineheight = 22/g' config.def.h || error "Failed to set line height"
+sudo make clean install || error "Failed to build and install dmenu"
+
+# Build and install slock
+section "SLOCK BUILD"
+log "Building slock..."
+cd /home/jwno/src
+git clone https://git.suckless.org/slock || error "Failed to clone slock repository"
+cd slock
+# Download and apply patches
+log "Downloading and applying slock patches..."
+wget https://tools.suckless.org/slock/patches/blur-pixelated-screen/slock-blur_pixelated_screen-1.4.diff || error "Failed to download blur patch"
+patch -p1 < slock-blur_pixelated_screen-1.4.diff || error "Failed to apply blur patch"
+# Configure pixelation settings
+log "Configuring slock pixelation settings..."
+sed -i 's/PIXELSIZE [0-9]*/PIXELSIZE 2/g' config.def.h || error "Failed to set pixel size"
+sed -i 's/PIXELATION_SIZE [0-9]*/PIXELATION_SIZE 10/g' config.def.h || error "Failed to set pixelation size"
+sudo make clean install || error "Failed to build and install slock"
 
 # Install ble.sh
 section "BLE.SH INSTALLATION"
