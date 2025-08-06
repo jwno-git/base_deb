@@ -219,6 +219,7 @@ log "Setting up application configurations..."
 cp -r config/fastfetch /home/jwno/.config/ || error "Failed to copy fastfetch config"
 cp -r config/gtk-3.0 /home/jwno/.config/ || error "Failed to copy gtk-3.0 config"
 cp -r config/gtk-4.0 /home/jwno/.config/ || error "Failed to copy gtk-4.0 config"
+cp /home/jwno/base_deb/.xinitrc /home/jwno/ || error "Failed to copy xinitrc file"
 
 # Install themes and icons system-wide
 section "THEMES AND ICONS"
