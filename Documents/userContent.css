@@ -1,0 +1,11 @@
+/* Firefox userContent.css */
+
+@-moz-document url-prefix("about:blank"), url-prefix("about:newtab") {
+    body {
+      background-image: url("firefoxbackground.png") !important;
+      background-repeat: no-repeat !important;
+      background-size: cover !important;
+      background-position: center center;
+      background-attachment: fixed !important;
+    }
+  }
