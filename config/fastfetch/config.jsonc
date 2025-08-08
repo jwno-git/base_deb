@@ -53,17 +53,17 @@
       "keyColor": "",
       "temp": true
     },
-    {
-      "type": "cpuusage",
-      "key": "{#35}  {#96}→ ",
-      "keyColor": ""
-    },
     //{
-    //  "type": "gpu",
-    //  "key": "{#35}│ {#96}→ ",
-    //  "keyColor": "",
-    //  "temp": true
+    //  "type": "cpuusage",
+    //  "key": "{#35}  {#96}→ ",
+    //  "keyColor": ""
     //},
+    {
+      "type": "gpu",
+      "key": "{#35}│ {#96}→ ",
+      "keyColor": "",
+      "temp": true
+    },
     {
       "type": "title",
       "format": "{#35}╰────────────────────────────────────────────────────┘"
